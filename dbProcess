@@ -1,0 +1,122 @@
+var options = {
+	host     : '174.132.104.162',
+	user     : 'berk_LocusAdmin',
+	password : '2401101992C',
+	insecureAuth: true,
+	database: 'berk_locuspocus'
+} 
+
+var client = {
+	id : null,
+	mail : null,
+	name : null,
+	surname : null,
+	friends : {},
+	login: false
+}
+var DbProcess = function () {
+
+	var md5 = require('MD5');
+	var mysql = require('mysql');
+	this.md5 = md5;
+	this.mysql = mysql;
+	this.connection = mysql.createConnection(options);
+	
+	this.client = client;
+
+	
+
+} 
+DbProcess.prototype.updateLocation = function(userid, lon, lat, cb) {
+	var dbProcess = new DbProcess();
+
+	var post  = {
+		userid: dbProcess.connection.escape(userid), 
+		longitude: dbProcess.connection.escape(lon),
+		latitude: dbProcess.connection.escape(lat)
+	};
+	console.log('POST: ' + post.userid + ' ' + post.longitude + ' ' + post.latitude);
+	console.log('1');
+	var statement = 'INSERT INTO current_location_normal SET userid = ' + dbProcess.connection.escape(userid) + ', longitude = ' + dbProcess.connection.escape(lon) + ', latitude = ' + dbProcess.connection.escape(lat) + ' ON DUPLICATE KEY UPDATE longitude = ' + dbProcess.connection.escape(lon) + ', latitude = ' + dbProcess.connection.escape(lat);
+	dbProcess.connection.query(statement, function(err, result) {
+		if(err) {
+			cb(false);
+			console.log('error');
+			console.log(err);
+			dbProcess.connection.end();
+		}
+		console.log('2');
+		dbProcess.connection.end();
+		cb(true);
+	});
+
+
+}	
+
+DbProcess.prototype.register = function(name, surname, mail, password, cb) {
+	var dbProcess = new DbProcess();
+
+	var post  = {
+		userid: dbProcess.connection.escape(userid), 
+		longitude: dbProcess.connection.escape(lon),
+		latitude: dbProcess.connection.escape(lat)
+	};
+	console.log('POST: ' + post.userid + ' ' + post.longitude + ' ' + post.latitude);
+	console.log('1');
+	var statement = 'INSERT INTO current_location_normal SET userid = ' + dbProcess.connection.escape(userid) + ', longitude = ' + dbProcess.connection.escape(lon) + ', latitude = ' + dbProcess.connection.escape(lat) + ' ON DUPLICATE KEY UPDATE longitude = ' + dbProcess.connection.escape(lon) + ', latitude = ' + dbProcess.connection.escape(lat);
+	dbProcess.connection.query(statement, function(err, result) {
+		if(err) {
+			cb(false);
+			console.log('error');
+			console.log(err);
+			dbProcess.connection.end();
+		}
+		console.log('2');
+		dbProcess.connection.end();
+		cb(true);
+	});
+
+
+}
+
+DbProcess.prototype.getUser = function(payload, cb) {
+	var dbProcess = new DbProcess();
+
+	var secret = dbProcess.md5(payload.pass);
+
+	var statement = 'SELECT * FROM login_normal_membership WHERE mail = ' + dbProcess.connection.escape(payload.mail) + ' AND password = ' + dbProcess.connection.escape(secret);
+
+	dbProcess.connection.query(statement, function(err, rows, fields) {
+		if(rows.length > 0) {
+			console.log('5');
+
+			var user = {
+				id : null,
+				mail : null,
+				name : null,
+				surname : null,
+				friends : {},
+				login: true
+
+			};
+
+			client.id = rows[0].id;
+			client.mail = rows[0].mail;
+			client.name = rows[0].name;
+			client.surname = rows[0].surname;
+			client.friends = rows[0].friends;
+			client.login = true;
+			this.client = client;
+
+
+			console.log('7');
+			dbProcess.connection.end();
+			console.log('8');
+			cb(user);
+		}
+		cb(true);
+	});	
+};
+
+
+module.exports = exports = DbProcess;

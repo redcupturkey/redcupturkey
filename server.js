@@ -2,16 +2,49 @@ var
 fs = require('fs')
 ,crypto = require('crypto')
 ,tls = require('tls')
+, express = require('express')
+, os = require('os')
+, DbProcess = require('./controller/dbProcess.js')
+, routes = require('./routes')
+, path = require('path');
 
-,certPem = fs.readFileSync('apns-prod-cert.pem', encoding='ascii')
-,keyPem = fs.readFileSync('apns-prod-key-noenc.pem', encoding='ascii')
-,caCert = fs.readFileSync('AppleWWDRCA.cer', encoding='ascii')
+,certPem = fs.readFileSync('apnagent-dev-key.pem', encoding='ascii')
+,keyPem = fs.readFileSync('apnagent-dev-cert-noenc.pem', encoding='ascii')
+,caCert = fs.readFileSync('aps_development.cer', encoding='ascii')
 ,options = { key: keyPem, cert: certPem, ca: [ caCert ] }
 ;
 
-connectAPN(function(){});
+var port = process.env.PORT || 1337;
+var app = express();
 
-function connectAPN( next ) {
+//Uses
+app.use(express.errorHandler({
+	dumpExceptions: true,
+	showStack: true
+}));
+app.use(express.methodOverride());
+app.use(express.bodyParser());
+
+
+app.get('/register', function(req, res, next) {
+	res.setHeader('200');
+	var dbProcess = new DbProcess();
+	dbProcess.registerToken(req.query['deviceToken'], function(updated) {
+		if(updated)
+			res.end('100'); 
+		else
+			res.end('101');   
+	});
+});
+
+app.get('/post'), function(req, res, next) {
+	res.setHeader('200');
+	if(connectAPN(req.query['deviceToken'], function(){}))
+		res.end('Sent')
+	
+}
+
+function connectAPN(deviceToken, next ) {
 
 	var stream = tls.connect(2195, 'gateway.sandbox.push.apple.com', options, function() {
 
@@ -22,7 +55,7 @@ function connectAPN( next ) {
 
 	var
         pushnd = { aps: { alert:'This is a test' }, customParam: { foo: 'bar' } } // 'aps' is required
-        ,hextoken = 'YOU TOKEN GOES HERE' // Push token from iPhone app. 32 bytes as hexadecimal string
+        ,hextoken = deviceToken // Push token from iPhone app. 32 bytes as hexadecimal string
         ,token = hextobin(hextoken)
         ,payload = JSON.stringify(pushnd)
         ,payloadlen = Buffer.byteLength(payload, 'utf-8')
