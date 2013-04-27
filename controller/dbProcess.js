@@ -19,7 +19,7 @@ var DbProcess = function () {
 } 
 DbProcess.prototype.registerToken = function(token, cb) {
 	var dbProcess = new DbProcess();
-	var statement = 'INSERT INTO tokentable SET token = ' + dbProcess.connection.escape(token) + 'ON DUPLICATE KEY UPDATE token = ' + dbProcess.connection.escape(token);
+	var statement = 'INSERT INTO tokentable SET token = ' + dbProcess.connection.escape(token) + ' ON DUPLICATE KEY UPDATE token = ' + dbProcess.connection.escape(token);
 	dbProcess.connection.query(statement, function(err, result) {
 		if(err) {
 			console.log(result);
