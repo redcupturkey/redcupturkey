@@ -1,0 +1,6 @@
+[submodule "apn"]
+	path = apn
+	url = http://github.com/argon/node-apn.git
+[submodule "q"]
+	path = q
+	url = https://github.com/kriskowal/q.git
