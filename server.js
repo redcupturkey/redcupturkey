@@ -12,7 +12,7 @@ var certPem = fs.readFileSync('./certificates/apnagent-dev-cert-noenc.pem', enco
 , options = { key: keyPem, cert: certPem, ca: [ caCert ] }
 ;
 
-var port = 1337;
+var port = process.env.PORT || 1337;
 var app = express();
 
 //Uses
