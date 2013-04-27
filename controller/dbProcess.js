@@ -1,6 +1,6 @@
 var options = {
 	host     : '174.132.104.162',
-	user     : 'berk_LocusAdmin',
+	user     : 'berk_notifAdmin',
 	password : '2401101992CcC',
 	insecureAuth: true,
 	database: 'berk_rednotif'
@@ -14,8 +14,6 @@ var DbProcess = function () {
 	this.mysql = mysql;
 	this.connection = mysql.createConnection(options);
 	
-	this.client = client;
-
 	
 
 } 
@@ -24,9 +22,11 @@ DbProcess.prototype.registerToken = function(token, cb) {
 	var statement = 'INSERT INTO tokentable SET token = ' + dbProcess.connection.escape(token) + 'ON DUPLICATE KEY UPDATE token = ' + dbProcess.connection.escape(token);
 	dbProcess.connection.query(statement, function(err, result) {
 		if(err) {
-			cb(false);
+			console.log(result);
 			dbProcess.connection.end();
+			cb(false);
 		}
+		console.log(result);
 		dbProcess.connection.end();
 		cb(true);
 	});
@@ -49,6 +49,31 @@ DbProcess.prototype.deleteToken = function(token, cb) {
 
 }	
 
+DbProcess.prototype.getToken = function(cb) {
+	var dbProcess = new DbProcess();
+	var statement = 'SELECT * FROM tokentable';
+	dbProcess.connection.query(statement, function(err, rows, fields) {
+		if (err) throw err;
+		var length = rows.length;
+		var tokens = new Array;
+
+		
+		for (var i = 0; i < length; i++) {
+			console.log('in get token');
+			tokens.push(rows[i].token);
+			if(i == length - 1) {
+				console.log('burda');
+				cb(tokens);
+				dbProcess.connection.end();
+
+			}
+		}
+		
+		
+	});
+
+
+}	
 
 
 module.exports = exports = DbProcess;

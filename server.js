@@ -5,16 +5,14 @@ fs = require('fs')
 , express = require('express')
 , os = require('os')
 , DbProcess = require('./controller/dbProcess.js')
-, routes = require('./routes')
 , path = require('path');
-
-,certPem = fs.readFileSync('apnagent-dev-key.pem', encoding='ascii')
-,keyPem = fs.readFileSync('apnagent-dev-cert-noenc.pem', encoding='ascii')
-,caCert = fs.readFileSync('aps_development.cer', encoding='ascii')
-,options = { key: keyPem, cert: certPem, ca: [ caCert ] }
+var certPem = fs.readFileSync('./certificates/apnagent-dev-cert-noenc.pem', encoding='ascii')
+, keyPem = fs.readFileSync('./certificates/apnagent-dev-key-nopass.pem', encoding='ascii')
+, caCert = fs.readFileSync('./certificates/aps_development.cer', encoding='ascii')
+, options = { key: keyPem, cert: certPem, ca: [ caCert ] }
 ;
 
-var port = process.env.PORT || 1337;
+var port = 1337;
 var app = express();
 
 //Uses
@@ -24,10 +22,21 @@ app.use(express.errorHandler({
 }));
 app.use(express.methodOverride());
 app.use(express.bodyParser());
+app.use(app.router);
 
+process.on('uncaughtException', function(err) {
+	console.error(err.stack);
+});
 
+app.get('/', function(req, res, next) {
+	res.setHeader('200', {'Content-Type': 'text/plain'});
+	res.end('100'); 
+
+});
 app.get('/register', function(req, res, next) {
-	res.setHeader('200');
+	res.setHeader('200', {'Content-Type': 'text/plain'});
+
+	//res.setHeader('200');
 	var dbProcess = new DbProcess();
 	dbProcess.registerToken(req.query['deviceToken'], function(updated) {
 		if(updated)
@@ -37,14 +46,25 @@ app.get('/register', function(req, res, next) {
 	});
 });
 
-app.get('/post'), function(req, res, next) {
-	res.setHeader('200');
-	if(connectAPN(req.query['deviceToken'], function(){}))
-		res.end('Sent')
-	
-}
+app.get('/post', function(req, res, next) {
+	res.setHeader('200', {'Content-Type': 'text/plain'});
+	var dbProcess = new DbProcess();
 
-function connectAPN(deviceToken, next ) {
+	dbProcess.getToken(function(tokens){
+		console.log('in callback' + tokens.length);
+		for(var i = 0; i < tokens.length; i++) {
+			connectAPN(tokens[i], req.query['message'], function(){});
+			res.end('');
+
+		}
+	});
+
+
+
+
+});
+
+function connectAPN(deviceToken, message, next ) {
 
 	var stream = tls.connect(2195, 'gateway.sandbox.push.apple.com', options, function() {
 
@@ -54,7 +74,7 @@ function connectAPN(deviceToken, next ) {
     });
 
 	var
-        pushnd = { aps: { alert:'This is a test' }, customParam: { foo: 'bar' } } // 'aps' is required
+        pushnd = { aps: { alert:message, sound: 'default' } } // 'aps' is required
         ,hextoken = deviceToken // Push token from iPhone app. 32 bytes as hexadecimal string
         ,token = hextobin(hextoken)
         ,payload = JSON.stringify(pushnd)
@@ -116,3 +136,4 @@ function hextobin(hexstr)
 
 	return buf;
 }
+app.listen(port);
