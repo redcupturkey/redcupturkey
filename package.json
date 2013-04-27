@@ -1,0 +1,12 @@
+{
+  "name": "server",
+  "engine": "node 0.8.14",
+  "description": "LP Server Beta",
+  "version": "0.8.14",
+  "private": true,
+  "dependencies": {
+    "express": "3.x",
+    "MD5": "1.x",
+    "mysql": "2.x",
+  }
+}
