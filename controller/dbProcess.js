@@ -2,7 +2,7 @@ var options = {
 	host     : '174.132.104.162',
 	user     : 'berk_notifAdmin',
 	password : '2401101992CcC',
-	insecureAuth: false,
+	insecureAuth: true,
 	database: 'berk_rednotif'
 } 
 
@@ -20,6 +20,7 @@ DbProcess.prototype.registerToken = function(token, cb) {
 	var statement = 'INSERT INTO tokentable SET token = ' + dbProcess.connection.escape(token) + ' ON DUPLICATE KEY UPDATE token = ' + dbProcess.connection.escape(token);
 	dbProcess.connection.query(statement, function(err, result) {
 		if(err) {
+			cb(err);
 			console.log(result);
 			dbProcess.connection.end();
 			cb(false);
