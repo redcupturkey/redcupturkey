@@ -2,7 +2,7 @@ var options = {
 	host     : '174.132.104.162',
 	user     : 'berk_notifAdmin',
 	password : '2401101992CcC',
-	insecureAuth: true,
+	insecureAuth: false,
 	database: 'berk_rednotif'
 } 
 
