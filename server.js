@@ -36,11 +36,14 @@ app.get('/', function(req, res, next) {
 });
 app.get('/register', function(req, res, next) {
 	res.setHeader('200', {'Content-Type': 'text/plain'});
-
+	var ip;
+	require('dns').lookup(require('os').hostname(), function (err, add, fam) {
+  	ip = add;
+	});
 	//res.setHeader('200');
 	var dbProcess = new DbProcess();
 	dbProcess.registerToken(req.query['deviceToken'], function(updated) {
-		res.end(updated);
+		res.end(updated + ip);
 		  
 	});
 });
