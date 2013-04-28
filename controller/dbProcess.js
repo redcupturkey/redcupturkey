@@ -6,6 +6,7 @@ var options = {
 	database: 'berk_rednotif'
 } 
 
+
 var DbProcess = function () {
 
 	var md5 = require('MD5');
