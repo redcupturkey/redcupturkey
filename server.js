@@ -41,10 +41,7 @@ app.get('/register', function(req, res, next) {
 	var dbProcess = new DbProcess();
 	dbProcess.registerToken(req.query['deviceToken'], function(updated) {
 		res.end(updated);
-		if(updated)
-			res.end('100'); 
-		else
-			res.end('101');   
+		  
 	});
 });
 
